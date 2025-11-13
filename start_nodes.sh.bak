@@ -1,0 +1,79 @@
+#!/bin/bash
+export SCREENDIR=/tmp/screen
+mkdir -p "$SCREENDIR"
+chmod 700 "$SCREENDIR"
+#########################################
+# Usage:
+#   ./start_nodes.sh <start> <end>    # Start nodes from <start> to <end> (inclusive)
+#   ./start_nodes.sh <number>         # Start only node <number>
+#   ./start_nodes.sh clean            # Stop all geth nodes, kill screen sessions, and delete all /home/shix/ddos* directories
+#   ./start_nodes.sh clean <number>   # Stop geth node <number>, kill screen session, and delete /home/shix/ddos<number>
+#########################################
+
+GETH_PATH="./build/bin/geth"
+BASE_DATADIR="/Users/sxguan/Research"
+BASE_SCREEN_NAME="geth_node"
+BASE_PORT=10000
+BASE_HTTP_PORT=10500
+BASE_AUTHRPC_PORT=8550
+
+start_node() {
+    i=$1
+    PORT=$((BASE_PORT + i))
+    HTTP_PORT=$((BASE_HTTP_PORT + i))
+    AUTHRPC_PORT=$((BASE_AUTHRPC_PORT + i))
+    DATADIR="$BASE_DATADIR/ddos$i"
+    SCREEN_NAME="$BASE_SCREEN_NAME$i"
+
+    mkdir -p "$DATADIR"
+    screen -dmS "$SCREEN_NAME" "$GETH_PATH" \
+        --http \
+        --port "$PORT" \
+        --http.api web3,eth,net,txpool,engine,admin \
+        --http.port "$HTTP_PORT" \
+        --datadir "$DATADIR" \
+        --authrpc.port "$AUTHRPC_PORT" \
+        --nodiscover \
+        --verbosity 5
+    echo "Started node $i in screen '$SCREEN_NAME' using datadir $DATADIR"
+}
+
+stop_node() {
+    i=$1
+    SCREEN_NAME="$BASE_SCREEN_NAME$i"
+    DATADIR="$BASE_DATADIR/ddos$i"
+
+    screen -S "$SCREEN_NAME" -X quit 2>/dev/null
+    rm -rf "$DATADIR"
+    echo "Stopped and cleaned node $i"
+}
+
+if [[ "$1" == "clean" ]]; then
+    if [[ -n "$2" ]]; then
+        stop_node "$2"
+    else
+        # Clean all nodes
+        for dir in $BASE_DATADIR/ddos*; do
+            if [[ -d "$dir" ]]; then
+                i=$(basename "$dir" | sed 's/ddos//')
+                stop_node "$i"
+            fi
+        done
+    fi
+    exit 0
+fi
+
+# Start nodes
+if [[ -n "$1" && -z "$2" ]]; then
+    start_node "$1"
+elif [[ -n "$1" && -n "$2" ]]; then
+    for ((i=$1; i<=$2; i++)); do
+        start_node "$i"
+    done
+else
+    echo "Invalid usage."
+    echo "Use './start_nodes.sh 1 10' to start nodes 1 to 10"
+    echo "Use './start_nodes.sh clean' to stop and clean all"
+    echo "Use './start_nodes.sh clean 5' to stop and clean node 5"
+    exit 1
+fi
